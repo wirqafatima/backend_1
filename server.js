@@ -1,7 +1,7 @@
 import express from 'express'
 const app = express();
 
-
+app.use(express.json());
 app.get("/", (req, res) => {
     res.json({
         message: "Hello world"
@@ -17,6 +17,24 @@ app.post("/profile/:name/:age/:city", (req, res) => {
     res.status(200).json({
         message: `My name is ${name} ,I am ${age} years old , I am from ${city} , My email address is ${email}`
     })
+})
+
+app.post('/users/create', (req, res) => {
+
+    const { name, email, age, password } = req.body;
+
+
+    if (!name || !email || !age || !password) {
+        return res.status(400).json({ error: '  All fields must be filled.' });
+    }
+
+
+
+
+    res.status(200).json({
+        message: 'User created successfully', user: req.body,
+
+    });
 })
 
 app.listen(3001, () => {
