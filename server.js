@@ -1,7 +1,11 @@
 import express from 'express'
 const app = express();
-
+import multer from 'multer'
+import path from 'path'
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
+
+
 app.get("/", (req, res) => {
     res.json({
         message: "Hello world"
@@ -36,6 +40,42 @@ app.post('/users/create', (req, res) => {
 
     });
 })
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './uploads');
+    },
+    filename: function (req, file, cb) {
+        const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
+
+        // path.extname asli extension (.jpg / .png) khud hi nikal leta hai
+        const ext = path.extname(file.originalname);
+
+        cb(null, file.fieldname + "-" + uniqueSuffix + ext);
+    }
+});
+
+const upload = multer({ storage: storage });
+
+app.post("/upload", upload.single("image"), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: "Please upload an image" });
+    }
+    console.log(req.file)
+    res.json({ data: req.file.filename })
+})
+
+
+
+
+
+
+
+
+
+
+
+
 
 app.listen(3001, () => {
     console.log("Server started on port 3001")
