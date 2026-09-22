@@ -3,6 +3,7 @@ const app = express();
 import multer from 'multer'
 import path from 'path'
 import mongoose from 'mongoose'
+import 'dotenv/config'
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
@@ -72,7 +73,7 @@ app.post("/upload", upload.single("image"), (req, res) => {
 async function main() {
     try {
 
-        await mongoose.connect("mongodb://wirqafatima_db_user:wiki123@ac-oszru9m-shard-00-00.bemhe8u.mongodb.net:27017,ac-oszru9m-shard-00-01.bemhe8u.mongodb.net:27017,ac-oszru9m-shard-00-02.bemhe8u.mongodb.net:27017/?ssl=true&replicaSet=atlas-vjfdyi-shard-0&authSource=admin&appName=Cluster0");
+        await mongoose.connect(process.env.MONGODB_URI);
         console.log("MongoDB connected successfully");
     } catch (error) {
         console.error("MongoDB connection error:", error);
