@@ -2,6 +2,7 @@ import express from 'express'
 const app = express();
 import multer from 'multer'
 import path from 'path'
+import mongoose from 'mongoose'
 app.use(express.json());
 app.use("/uploads", express.static("uploads"));
 
@@ -43,14 +44,14 @@ app.post('/users/create', (req, res) => {
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, './uploads');
+        cb(null, 'uploads/');
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
 
         // path.extname asli extension (.jpg / .png) khud hi nikal leta hai
-        const ext = path.extname(file.originalname);
-
+        // const ext = "." + file.mimetype.split("/")[1];
+        const ext = path.extname(file.originalname)
         cb(null, file.fieldname + "-" + uniqueSuffix + ext);
     }
 });
@@ -68,15 +69,19 @@ app.post("/upload", upload.single("image"), (req, res) => {
 
 
 
+async function main() {
+    try {
 
+        await mongoose.connect("mongodb://wirqafatima_db_user:wiki123@ac-oszru9m-shard-00-00.bemhe8u.mongodb.net:27017,ac-oszru9m-shard-00-01.bemhe8u.mongodb.net:27017,ac-oszru9m-shard-00-02.bemhe8u.mongodb.net:27017/?ssl=true&replicaSet=atlas-vjfdyi-shard-0&authSource=admin&appName=Cluster0");
+        console.log("MongoDB connected successfully");
+    } catch (error) {
+        console.error("MongoDB connection error:", error);
+    }
+}
 
-
-
-
-
-
-
+main();
 
 app.listen(3001, () => {
+    // main()
     console.log("Server started on port 3001")
 })
