@@ -59,13 +59,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-app.post("/upload", upload.single("image"), (req, res) => {
-    if (!req.file) {
-        return res.status(400).json({ error: "Please upload an image" });
-    }
-    console.log(req.file)
-    res.json({ data: req.file.filename })
-})
+// app.post("/upload", upload.single("image"), (req, res) => {
+//     if (!req.file) {
+//         return res.status(400).json({ error: "Please upload an image" });
+//     }
+//     console.log(req.file)
+//     res.json({ data: req.file.filename })
+// })
 
 
 
@@ -82,7 +82,87 @@ async function main() {
 
 main();
 
-app.listen(3001, () => {
+
+app.post("/upload", upload.single("picture"), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ error: "Please upload picture" });
+    }
+    console.log(req.file)
+    res.json({ data: req.file.filename })
+})
+
+
+
+
+
+
+
+const userSchema = new mongoose.Schema({
+    userName: {
+        type: String, minLength: 3, maxLength: 20, required: true
+    },
+    email: {
+        type: String, required: true, unique: true, lowercase: true
+    },
+    phone: {
+        type: String, required: true, unique: true
+    },
+    age: {
+        type: Number, required: true,
+    },
+    address: {
+        type: String, requred: true
+    },
+    password: {
+        type: String, minLength: 5, maxLength: 20, required: true, select: false
+    },
+    picture: {
+        type: String, required: true
+    }
+
+}, { timestamps: true })
+
+
+const userModel = new mongoose.model("User", userSchema)
+
+app.post("/user", upload.single("picture"), async (req, res) => {
+    const { userName, email, password, age, address, phone } = req.body
+
+    if (!userName || !email || !age || !password || !address || !phone)
+        return res.status(400).json({
+            success: false,
+            message: "please enter all fields"
+        })
+    if (!req.file)
+        return res.status(400).json({
+            success: false,
+            message: "picture is required"
+        })
+    const user = await userModel.create({
+        email,
+        address,
+        password,
+        age,
+        phone,
+        userName,
+        picture: req.file.filename
+    })
+
+    return res.status(200).json({
+        success: true,
+        message: "user created successfully"
+    });
+})
+
+
+
+
+
+
+
+
+
+app.listen(5000, () => {
     // main()
-    console.log("Server started on port 3001")
+    console.log("Server started on port 5000")
 })
