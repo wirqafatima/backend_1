@@ -111,7 +111,7 @@ const userSchema = new mongoose.Schema({
         type: Number, required: true,
     },
     address: {
-        type: String, requred: true
+        type: String, required: true
     },
     password: {
         type: String, minLength: 5, maxLength: 20, required: true, select: false
@@ -128,7 +128,7 @@ const userModel = new mongoose.model("User", userSchema)
 app.post("/user", upload.single("picture"), async (req, res) => {
     const { userName, email, password, age, address, phone } = req.body
 
-    if (!userName || !email || !age || !password || !address || !phone)
+    if (!userName || !age || !password || !address || !phone || !email)
         return res.status(400).json({
             success: false,
             message: "please enter all fields"
@@ -138,6 +138,7 @@ app.post("/user", upload.single("picture"), async (req, res) => {
             success: false,
             message: "picture is required"
         })
+
     const user = await userModel.create({
         email,
         address,
@@ -145,19 +146,74 @@ app.post("/user", upload.single("picture"), async (req, res) => {
         age,
         phone,
         userName,
-        picture: req.file.filename
-    })
+        picture: `${process.env.APP_URL}/uploads/${req.file.filename}`
+    });
 
-    return res.status(200).json({
+    res.status(200).json({
         success: true,
         message: "user created successfully"
     });
-})
+
+
+});
+
+// get all users
+app.get("/users", async (req, res) => {
+    const users = await userModel.find();
+    res.status(200).json({ success: true, users });
+});
+
+// get user through id
+app.get("/user/:id", async (req, res) => {
+    const { id } = req.params;
+
+    const user = await userModel.findById(id);
+
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            message: "User not found"
+        });
+    }
+
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+app.put("/user/:id", upload.single("picture"), async (req, res) => {
+    const { id } = req.params;
+    let updateData = req.body;
+
+    if (req.file) {
+        updateData.picture = `${process.env.APP_URL}/uploads/${req.file.filename}`;
+    }
+
+    const updatedUser = await userModel.findByIdAndUpdate(id, updateData, {
+        new: true,
+        runValidators: true
+    });
+
+    if (!updatedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "User updated", user: updatedUser });
+});
 
 
 
+app.delete("/user/:id", async (req, res) => {
+    const { id } = req.params;
 
+    const deletedUser = await userModel.findByIdAndDelete(id);
 
+    if (!deletedUser) {
+        return res.status(404).json({ success: false, message: "User not found" });
+    }
+
+    res.status(200).json({ success: true, message: "User deleted successfully" });
+});
 
 
 
